@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Require two arguments
+if [ "$#" -ne 2 ]; then
+    echo "error: $0 requires two arguments" >&2
+    exit 1
+fi
+
+# Paths to subscripts
+THIS_SCRIPTS_DIRECTORY=$(realpath $(dirname "$0"))
+PARSE_EXTDATAFILES=$THIS_SCRIPTS_DIRECTORY/parse_extfiles.awk
+EXPAND_EXTDATAFILES=$THIS_SCRIPTS_DIRECTORY/expand_extfiles.awk
+
+# Set start and end date
+START_DATE=$1
+END_DATE=$2
+
+# Check that dates are valid
+if ! date -d "$START_DATE" &> /dev/null ; then
+    echo "error: Invalid start date: $1" >&2
+    exit 1
+fi
+if ! date -d "$END_DATE" &> /dev/null ; then
+    echo "error: Invalid start date: $2" >&2
+    exit 1
+fi
+
+# Parse and expand ExtData.rc files
+awk -f $PARSE_EXTDATAFILES ExtData.rc | sort | uniq | awk -v START_DATE=$START_DATE -v END_DATE=$END_DATE -f $EXPAND_EXTDATAFILES
